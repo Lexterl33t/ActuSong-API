@@ -63,7 +63,7 @@ class ApiController
             if($args['default_days'] === "now")
                 $date_end = strtotime("now");
             else
-                $date_end = strtotime("-".strval(intval($args['default_days'])));
+                $date_end = strtotime("-".$args['default_days']);
 
             $cacheName = "recent_artists_album_".$args['default_days'];
         } else {
