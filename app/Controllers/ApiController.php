@@ -35,9 +35,12 @@ class ApiController
             }
         }
 
+
         $server_output = RequestController::post("https://accounts.spotify.com/api/token", [
             'Authorization:  Basic '.base64_encode($this->app_settings['client_id'].':'.$this->app_settings['client_secret'])
         ], "grant_type=client_credentials");
+
+
 
         file_put_contents(dirname(__FILE__).'/../../token_access.json', "{\"access_token\": \"".json_decode($server_output)->access_token."\"}");
         return json_decode($server_output)->access_token;
@@ -48,6 +51,7 @@ class ApiController
         $get_all_artists_in_array = json_decode(json_encode(json_decode(file_get_contents(dirname(__FILE__).'/../../artists.json'))), true);
 
         $access_token = $this->get_access_token();
+
         $recent_album = [];
 
         if((!isset($args['date_interval_start']) && empty($args['date_interval_start'])) && (!isset($args['date_interval_end']) && empty($args['date_interval_end'])) && (!isset($args['default_days']) && empty($args['default_days']))) {
@@ -111,7 +115,7 @@ class ApiController
         }
 
 
-        $response->getBody()->write(json_encode($recent_album, true));
+        $response->getBody()->write(json_encode($recent_album));
         return $response;
     }
 

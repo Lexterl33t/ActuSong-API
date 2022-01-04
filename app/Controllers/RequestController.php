@@ -23,6 +23,7 @@ class RequestController
 
         curl_close ($ch);
 
+
         return $server_output;
     }
 

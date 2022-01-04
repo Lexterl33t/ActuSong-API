@@ -1,5 +1,9 @@
 <?php
 
+$app->get('/', function(\Psr\Http\Message\RequestInterface $request, \Psr\Http\Message\ResponseInterface $response) {
+    return $response->withHeader('location', '/api/')->withStatus(302);
+});
+
 $app->group('/api', function(\Slim\Routing\RouteCollectorProxy $group) {
     $group->get('/', \App\Controllers\ArtistsRegisteredController::class.':index');
     $group->get('/artists_registred', \App\Controllers\ArtistsRegisteredController::class.':index');
