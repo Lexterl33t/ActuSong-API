@@ -57,9 +57,7 @@ class ApiController
             $cacheName = "recent_artists_album";
         } elseif (isset($args['default_days']) && !empty($args['default_days'])) {
             $date_start = strtotime("now");
-
             $date_end = strtotime("-" . $args['default_days'] . " days");
-
             $cacheName = "recent_artists_album_" . $args['default_days'];
         } else {
             $date_start = strtotime($args['date_interval_start']);
