@@ -43,6 +43,85 @@ class ApiController
         return json_decode($server_output)->access_token;
     }
 
+    public function actuality_albums_range(RequestInterface $request, ResponseInterface $response, $args)
+    {
+        $access_token = $this->get_access_token();
+
+        $get_all_artists_in_array = json_decode(json_encode(json_decode(file_get_contents(dirname(__FILE__) . '/../../artists.json'))), true);
+
+        $recent_albums = [];
+
+        $args = filter_var_array($args);
+
+
+        if (isset($args["date_interval_start"]) && !empty($args['date_interval_start']) && isset($args['date_interval_end']) && !empty($args['date_interval_end'])) {
+            $cacheName = "recent_artists_album_range_" . $args['date_interval_start'] . '_' . $args['date_interval_end'];
+
+            if (!$this->container->get('cache')->read($cacheName)) {
+
+                $date_start = strtotime($args["date_interval_start"]);
+                $date_end = strtotime($args["date_interval_end"]);
+
+                foreach ($get_all_artists_in_array['artists'] as $artist) {
+                    $req = RequestController::get('https://api.spotify.com/v1/artists/' . $artist['id'] . '/albums', [
+                        'Authorization: Bearer ' . $access_token,
+                        'Accept: application/json',
+                        'Content-Type: application/json'
+                    ], [
+                        'limit' => "1"
+                    ]);
+
+
+                    $req_array = json_decode($req, true);
+                    if (isset($req_array['error']) && $req_array['error']['message'] === "The access token expired") {
+                        $this->get_access_token(true);
+                        $response->getBody()->write("Refresh page");
+                        return $response;
+                    }
+
+                    $released_date = strtotime($req_array['items'][0]['release_date']);
+                    if ($date_start > $date_end) {
+                        if ($released_date <= $date_start && $released_date >= $date_end) {
+                            $data = [
+                                'name' => $req_array['items'][0]['artists'][0]['name'],
+                                'recent_album' => $req_array['items'][0]['name'],
+                                'release_date' => $req_array['items'][0]['release_date']
+                            ];
+
+                            var_dump($artist);
+
+                            array_push($recent_albums, $data);
+                        }
+                    } else {
+                        if ($released_date >= $date_start && $released_date <= $date_end) {
+                            $data = [
+                                'name' => $req_array['items'][0]['artists'][0]['name'],
+                                'recent_album' => $req_array['items'][0]['name'],
+                                'release_date' => $req_array['items'][0]['release_date']
+                            ];
+
+                            var_dump($artist);
+
+                            array_push($recent_albums, $data);
+                        }
+                    }
+
+                }
+                $this->container->get('cache')->write($cacheName, json_encode($recent_albums));
+
+            } else {
+                $response->getBody()->write($this->container->get('cache')->read($cacheName));
+                return $response;
+            }
+        } else {
+            $response->getBody()->write('Missing query !');
+            return $response;
+        }
+
+        $response->getBody()->write(json_encode($recent_albums));;
+        return $response;
+    }
+
     public function actuality_album(RequestInterface $request, ResponseInterface $response, $args)
     {
         $get_all_artists_in_array = json_decode(json_encode(json_decode(file_get_contents(dirname(__FILE__) . '/../../artists.json'))), true);
@@ -51,18 +130,17 @@ class ApiController
 
         $recent_album = [];
 
-        if ((!isset($args['date_interval_start']) && empty($args['date_interval_start'])) && (!isset($args['date_interval_end']) && empty($args['date_interval_end'])) && (!isset($args['default_days']) && empty($args['default_days']))) {
+        $args = filter_var_array($args);
+
+        if (isset($args["default_days"]) && !empty($args["default_days"])) {
+            $date_start = strtotime("now");
+            $date_end = strtotime("-" . intval($args["default_days"]) . " days");
+
+            $cacheName = "recents_albums_" . $args["default_days"];
+        } else {
             $date_start = strtotime("now");
             $date_end = strtotime("-30 days");
-            $cacheName = "recent_artists_album";
-        } elseif (isset($args['default_days']) && !empty($args['default_days'])) {
-            $date_start = strtotime("now");
-            $date_end = strtotime("-" . $args['default_days'] . " days");
-            $cacheName = "recent_artists_album_" . $args['default_days'];
-        } else {
-            $date_start = strtotime($args['date_interval_start']);
-            $date_end = strtotime($args['date_interval_end']);
-            $cacheName = "recent_artist_albums_" . $date_end . '_' . $date_start;
+            $cacheName = "recent_albums";
         }
 
         if (!$this->container->get('cache')->read($cacheName)) {
@@ -83,27 +161,16 @@ class ApiController
                     return $response;
                 }
                 $released_date = strtotime($req_array['items'][0]['release_date']);
-                if ($date_start < $date_end) {
-                    if ($released_date >= $date_start && $released_date <= $date_end) {
-                        $data = [
-                            'name' => $req_array['items'][0]['artists'][0]['name'],
-                            'recent_album' => $req_array['items'][0]['name'],
-                            'release_date' => $req_array['items'][0]['release_date']
-                        ];
-                        array_push($recent_album, $data);
-                    }
-                } else {
-                    if ($released_date <= $date_start && $released_date >= $date_end) {
-                        $data = [
-                            'name' => $req_array['items'][0]['artists'][0]['name'],
-                            'recent_album' => $req_array['items'][0]['name'],
-                            'release_date' => $req_array['items'][0]['release_date']
-                        ];
 
-                        array_push($recent_album, $data);
-                    }
+                if ($released_date <= $date_start && $released_date >= $date_end) {
+                    $data = [
+                        'name' => $req_array['items'][0]['artists'][0]['name'],
+                        'recent_album' => $req_array['items'][0]['name'],
+                        'release_date' => $req_array['items'][0]['release_date']
+                    ];
+
+                    array_push($recent_album, $data);
                 }
-
             }
 
             $this->container->get('cache')->write($cacheName, json_encode($recent_album));

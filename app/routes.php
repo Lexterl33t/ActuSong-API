@@ -13,7 +13,7 @@ $app->group('/api', function(\Slim\Routing\RouteCollectorProxy $group) {
             $album_group->get('', \App\Controllers\ApiController::class.':actuality_album');
             $album_group->get('/', \App\Controllers\ApiController::class.':actuality_album');
             $album_group->get('/{default_days}', \App\Controllers\ApiController::class.':actuality_album');
-            $album_group->get('/{date_interval_start}/{date_interval_end}', \App\Controllers\ApiController::class.':actuality_album');
+            $album_group->get('/range/{date_interval_start}/{date_interval_end}', \App\Controllers\ApiController::class.':actuality_albums_range');
         });
 
         $actuality_group->group('/single', function (\Slim\Routing\RouteCollectorProxy $single_group) {
