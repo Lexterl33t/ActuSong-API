@@ -85,6 +85,7 @@ class ApiController
                             $data = [
                                 'name' => $req_array['items'][0]['artists'][0]['name'],
                                 'recent_album' => $req_array['items'][0]['name'],
+                                'image_album' => $req_array['items'][0]['images'][0]['url'],
                                 'release_date' => $req_array['items'][0]['release_date']
                             ];
 
@@ -97,6 +98,7 @@ class ApiController
                             $data = [
                                 'name' => $req_array['items'][0]['artists'][0]['name'],
                                 'recent_album' => $req_array['items'][0]['name'],
+                                'image_album' => $req_array['items'][0]['images'][0]['url'],
                                 'release_date' => $req_array['items'][0]['release_date']
                             ];
 
@@ -166,6 +168,7 @@ class ApiController
                     $data = [
                         'name' => $req_array['items'][0]['artists'][0]['name'],
                         'recent_album' => $req_array['items'][0]['name'],
+                        'image_album' => $req_array['items'][0]['images'][0]['url'],
                         'release_date' => $req_array['items'][0]['release_date']
                     ];
 
