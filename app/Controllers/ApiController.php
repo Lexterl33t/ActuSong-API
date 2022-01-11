@@ -89,7 +89,6 @@ class ApiController
                                 'release_date' => $req_array['items'][0]['release_date']
                             ];
 
-                            var_dump($artist);
 
                             array_push($recent_albums, $data);
                         }
@@ -101,9 +100,6 @@ class ApiController
                                 'image_album' => $req_array['items'][0]['images'][0]['url'],
                                 'release_date' => $req_array['items'][0]['release_date']
                             ];
-
-                            var_dump($artist);
-
                             array_push($recent_albums, $data);
                         }
                     }
